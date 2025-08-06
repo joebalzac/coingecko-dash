@@ -2,10 +2,11 @@ import useCoins from "../hooks/useCoins";
 
 interface Props {
   limit: number;
+  sortBy: string;
 }
 
-const CoinTable = ({ limit }: Props) => {
-  const { coins, error, isLoading } = useCoins({ limit });
+const CoinTable = ({ limit, sortBy }: Props) => {
+  const { coins, error, isLoading } = useCoins({ limit, sortBy });
 
   if (isLoading) return <div>Loading....</div>;
   if (error) return <div>{error}</div>;

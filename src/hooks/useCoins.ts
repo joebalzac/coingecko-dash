@@ -12,11 +12,12 @@ interface Coin {
 
 interface Controls {
   limit: number;
+  sortBy: string;
 }
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const useCoins = ({ limit }: Controls) => {
+const useCoins = ({ limit, sortBy }: Controls) => {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +25,7 @@ const useCoins = ({ limit }: Controls) => {
   const fetchCoins = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${API_URL}&per_page=${limit}`);
+      const res = await fetch(`${API_URL}&order=${sortBy}&per_page=${limit}`);
       const data = await res.json();
       setCoins(data);
     } catch (err) {
@@ -38,7 +39,7 @@ const useCoins = ({ limit }: Controls) => {
 
   useEffect(() => {
     fetchCoins();
-  }, [limit]);
+  }, [limit, sortBy]);
 
   return { coins, error, isLoading };
 };
