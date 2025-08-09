@@ -7,6 +7,7 @@ const SearchInput = ({ search, onSearchChange }: Props) => {
   return (
     <div>
       <input
+      className="border border-gray-900"
         value={search}
         type="text"
         placeholder="Search for Bithcoin"

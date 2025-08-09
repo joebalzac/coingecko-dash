@@ -11,10 +11,10 @@ const CoinGrid = () => {
 
   return (
     <div className="w-full">
-      <div className="pb-8 flex items-end w-full">
+      <div className="pb-8 flex  justify-between items-end w-full">
+        <SearchInput search={search} onSearchChange={setSearch} />
         <SortSelector sortBy={sortBy} onSortChange={setSortBy} />
         <LimitSelector limit={limit} onLimitChange={setLimit} />
-        <SearchInput search={search} onSearchChange={setSearch} />
       </div>
 
       <CoinTable limit={limit} sortBy={sortBy} search={search} />

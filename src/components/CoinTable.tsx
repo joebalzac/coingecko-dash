@@ -1,4 +1,6 @@
+import { FaStar } from "react-icons/fa";
 import useCoins from "../hooks/useCoins";
+import useFavorites from "../hooks/useFavorites";
 
 interface Props {
   limit: number;
@@ -8,6 +10,7 @@ interface Props {
 
 const CoinTable = ({ limit, sortBy, search }: Props) => {
   const { coins, error, isLoading } = useCoins({ limit, sortBy, search });
+  const { favorites, toggleFavorites } = useFavorites();
 
   if (isLoading) return <div>Loading....</div>;
   if (error) return <div>{error}</div>;
@@ -25,6 +28,12 @@ const CoinTable = ({ limit, sortBy, search }: Props) => {
       <tbody>
         {coins.map((coin, index) => (
           <tr key={coin.id} className="border-t border-gray-900">
+            <FaStar
+              onClick={() => toggleFavorites(coin.id)}
+              className={`cursor-pointer ${
+                favorites.includes(coin.id) ? "fill-amber-300" : "fill-gray-800"
+              }`}
+            />
             <td className="py-4 text-center">{index + 1}</td>
             <td className="py-4">
               <div className="flex items-center gap-4">
@@ -41,6 +50,7 @@ const CoinTable = ({ limit, sortBy, search }: Props) => {
         ))}
       </tbody>
     </table>
+    
   );
 };
 
