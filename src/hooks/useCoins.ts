@@ -13,11 +13,12 @@ interface Coin {
 interface Controls {
   limit: number;
   sortBy: string;
+  search: string;
 }
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const useCoins = ({ limit, sortBy }: Controls) => {
+const useCoins = ({ limit, sortBy, search }: Controls) => {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -37,11 +38,17 @@ const useCoins = ({ limit, sortBy }: Controls) => {
     }
   };
 
+  const filteredCoins = coins.filter(
+    (coin) =>
+      coin.name.toLowerCase().includes(search.toLowerCase()) ||
+      coin.symbol.toLowerCase().includes(search.toLowerCase())
+  );
+
   useEffect(() => {
     fetchCoins();
   }, [limit, sortBy]);
 
-  return { coins, error, isLoading };
+  return { coins: filteredCoins, error, isLoading };
 };
 
 export default useCoins;
