@@ -14,6 +14,9 @@ interface Controls {
   limit: number;
   sortBy: string;
   search: string;
+  sortKey: string;
+  sortDir: string;
+  onRequestSort: (key: string) => void;
 }
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -46,6 +49,10 @@ const useCoins = ({ limit, sortBy, search }: Controls) => {
 
   useEffect(() => {
     fetchCoins();
+
+    const intervalId = setInterval(fetchCoins, 30000);
+
+    return () => clearInterval(intervalId);
   }, [limit, sortBy]);
 
   return { coins: filteredCoins, error, isLoading };
