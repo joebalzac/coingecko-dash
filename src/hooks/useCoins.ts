@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-interface Coin {
+export interface Coin {
   id: string;
   symbol: string;
   name: string;
@@ -8,9 +8,10 @@ interface Coin {
   current_price: number;
   market_cap: number;
   price_change_percentage_24h: number;
+  [key: string]: any;
 }
 
-interface Controls {
+export interface Controls {
   limit: number;
   sortBy: string;
   search: string;

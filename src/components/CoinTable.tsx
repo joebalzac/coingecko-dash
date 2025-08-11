@@ -3,12 +3,13 @@ import { FaStar } from "react-icons/fa";
 import useCoins from "../hooks/useCoins";
 import useFavorites from "../hooks/useFavorites";
 import type { SortKey } from "./CoinGrid";
+import usePerformers from "../hooks/usePerformers";
 
 interface Props {
   limit: number;
-  sortBy: string; // used by hook for API order (optional)
+  sortBy: string;
   search: string;
-  sortKey: string | null; // client-side sort
+  sortKey: string | null;
   sortDir: "asc" | "desc";
   onRequestSort: (key: string) => void;
 }
@@ -30,18 +31,19 @@ const CoinTable = ({
     onRequestSort,
   });
   const { favorites, toggleFavorites } = useFavorites();
-  const [activeTab, setActiveTab] = useState<"all" | "favorites">("all");
+
+  const [activeTab, setActiveTab] = useState<
+    "all" | "favorites" | "top-perform" | "low-perform"
+  >("all");
 
   if (isLoading) return <div>Loading....</div>;
   if (error) return <div>{error}</div>;
 
-  // Minimal, robust sorter (ASC/DESC + string/number/null)
   const sortedCoins = sortKey
     ? [...coins].sort((a: any, b: any) => {
         const A = a[sortKey];
         const B = b[sortKey];
 
-        // push null/undefined to bottom
         if (A == null && B == null) return 0;
         if (A == null) return 1;
         if (B == null) return -1;
@@ -57,11 +59,16 @@ const CoinTable = ({
       })
     : coins;
 
-  // Tab filter
+  const { topPerformers, lowPerformers } = usePerformers(sortedCoins);
+
   const viewCoins =
     activeTab === "all"
       ? sortedCoins
-      : sortedCoins.filter((c) => favorites.includes(c.id));
+      : activeTab === "favorites"
+      ? sortedCoins.filter((c) => favorites.includes(c.id))
+      : activeTab === "top-perform"
+      ? topPerformers.slice(0, 10)
+      : lowPerformers.slice(0, 10);
 
   const Header = ({
     label,
@@ -96,7 +103,7 @@ const CoinTable = ({
       {/* Tabs */}
       <div className="flex gap-2 mb-3">
         <button
-          className={`px-3 py-1.5 rounded ${
+          className={`cursor-pointer px-3 py-1.5 rounded ${
             activeTab === "all"
               ? "bg-blue-600 text-white"
               : "bg-gray-800 text-gray-300"
@@ -106,14 +113,34 @@ const CoinTable = ({
           All
         </button>
         <button
-          className={`px-3 py-1.5 rounded ${
+          className={`cursor-pointer px-3 py-1.5 rounded ${
             activeTab === "favorites"
-              ? "bg-blue-600 text-white"
+              ? "bg-blue-900 text-white"
               : "bg-gray-800 text-gray-300"
           }`}
           onClick={() => setActiveTab("favorites")}
         >
           ⭐ Favorites ({favorites.length})
+        </button>
+        <button
+          className={`cursor-pointer px-3 py-1.5 rounded ${
+            activeTab === "top-perform"
+              ? "bg-blue-900 text-white"
+              : "bg-gray-800 text-gray-300"
+          }`}
+          onClick={() => setActiveTab("top-perform")}
+        >
+          Top Performers 🚀 ({topPerformers.length})
+        </button>
+        <button
+          className={`cursor-pointer px-3 py-1.5 rounded ${
+            activeTab === "low-perform"
+              ? "bg-blue-900 text-white"
+              : "bg-gray-800 text-gray-300"
+          }`}
+          onClick={() => setActiveTab("low-perform")}
+        >
+          Low Performers 📉 ({lowPerformers.length})
         </button>
       </div>
 
@@ -145,6 +172,8 @@ const CoinTable = ({
               <td colSpan={7} className="py-6 text-center text-gray-400">
                 {activeTab === "favorites"
                   ? "No favorites yet. Click the star in All to add some."
+                  : activeTab === "top-perform" || activeTab === "low-perform"
+                  ? "No performance data available"
                   : "No results."}
               </td>
             </tr>
