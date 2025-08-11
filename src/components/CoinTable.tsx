@@ -22,13 +22,24 @@ const CoinTable = ({
   sortDir,
   onRequestSort,
 }: Props) => {
-  const { coins, error, isLoading } = useCoins({
-    limit,
-    sortBy,
+
+  const page = 1;
+  const vs_currency = "usd";
+
+  const {
+    data: coins = [],
+    error,
+    isLoading,
+    isFetching,
+  } = useCoins({
+    page,
+    per_page: limit,
+    vs_currency,
+    order: sortBy,
     search,
-    sortKey: sortKey ?? "",
-    sortDir,
-    onRequestSort,
+    includeSparkline: false,
+    staleMs: 30_000,
+    refetchMs: 30_000,
   });
   const { favorites, toggleFavorites } = useFavorites();
 
@@ -37,7 +48,10 @@ const CoinTable = ({
   >("all");
 
   if (isLoading) return <div>Loading....</div>;
-  if (error) return <div>{error}</div>;
+  if (error) {
+    const msg = error instanceof Error ? error.message : "Failed to load coins";
+    return <div className="text-red-400">{msg}</div>;
+  }
 
   const sortedCoins = sortKey
     ? [...coins].sort((a: any, b: any) => {
@@ -142,6 +156,10 @@ const CoinTable = ({
         >
           Low Performers 📉 ({lowPerformers.length})
         </button>
+
+        {isFetching && (
+          <span className="text-xs text-gray-400 ml-2">Refreshing…</span>
+        )}
       </div>
 
       {/* Table */}

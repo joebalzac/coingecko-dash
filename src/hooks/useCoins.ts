@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+// src/hooks/useCoins.ts
+import { useQuery } from "@tanstack/react-query";
 
 export interface Coin {
   id: string;
@@ -7,56 +8,43 @@ export interface Coin {
   image: string;
   current_price: number;
   market_cap: number;
-  price_change_percentage_24h: number;
-  [key: string]: any;
+  price_change_percentage_24h: number | null;
+  sparkline_in_7d?: { price: number[] };
 }
 
-export interface Controls {
-  limit: number;
-  sortBy: string;
-  search: string;
-  sortKey: string;
-  sortDir: string;
-  onRequestSort: (key: string) => void;
-}
-
-const API_URL = import.meta.env.VITE_API_URL;
-
-const useCoins = ({ limit, sortBy, search }: Controls) => {
-  const [coins, setCoins] = useState<Coin[]>([]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchCoins = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch(`${API_URL}&order=${sortBy}&per_page=${limit}`);
-      const data = await res.json();
-      setCoins(data);
-    } catch (err) {
-      if (err) {
-        setError("An unknown error has occurred");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const filteredCoins = coins.filter(
-    (coin) =>
-      coin.name.toLowerCase().includes(search.toLowerCase()) ||
-      coin.symbol.toLowerCase().includes(search.toLowerCase())
-  );
-
-  useEffect(() => {
-    fetchCoins();
-
-    const intervalId = setInterval(fetchCoins, 30000);
-
-    return () => clearInterval(intervalId);
-  }, [limit, sortBy]);
-
-  return { coins: filteredCoins, error, isLoading };
+type Params = {
+  page: number;
+  per_page: number;
+  vs_currency: string;
+  order: string;
+  search?: string;
+  includeSparkline?: boolean;
+  staleMs?: number;
+  refetchMs?: number;
 };
+
+const fetchCoins = async (p: Params): Promise<Coin[]> => {
+  const url = new URL("https://api.coingecko.com/api/v3/coins/markets");
+  url.searchParams.set("vs_currency", p.vs_currency);
+  url.searchParams.set("order", p.order);
+  url.searchParams.set("per_page", String(p.per_page));
+  url.searchParams.set("page", String(p.page));
+  url.searchParams.set("sparkline", String(!!p.includeSparkline));
+  url.searchParams.set("price_change_percentage", "24h");
+  if (p.search) url.searchParams.set("ids", p.search);
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error("Failed to fetch coins");
+  return res.json();
+};
+
+const useCoins = (params: Params) =>
+  useQuery({
+    queryKey: ["coins", params],
+    queryFn: () => fetchCoins(params),
+    staleTime: params.staleMs ?? 30_000,
+    refetchInterval: params.refetchMs ?? 30_000,
+    placeholderData: (prev) => prev,
+  });
 
 export default useCoins;
