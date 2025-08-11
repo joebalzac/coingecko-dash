@@ -22,8 +22,8 @@ const CoinTable = ({
   sortDir,
   onRequestSort,
 }: Props) => {
+  const [page, setPage] = useState(1);
 
-  const page = 1;
   const vs_currency = "usd";
 
   const {
@@ -249,6 +249,23 @@ const CoinTable = ({
           )}
         </tbody>
       </table>
+
+      <div className="flex item-center gap-2 mt-3">
+        <button
+          className="cursor-pointer px-3 py-1 rounded bg-gray-800 hover:bg-gray-900 disabled:opacity-50"
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1 || isFetching}
+        >
+          Prev
+        </button>
+        <button
+          className="cursor-pointer px-3 py-1 rounded bg-gray-800 hover:bg-gray-900 disabled:opacity-50"
+          onClick={() => setPage((p) => Math.max(1, p + 1))}
+          disabled={isFetching || coins.length < limit}
+        >
+          Next
+        </button>
+      </div>
     </>
   );
 };
